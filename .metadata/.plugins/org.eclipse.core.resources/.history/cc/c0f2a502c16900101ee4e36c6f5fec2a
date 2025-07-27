@@ -1,0 +1,43 @@
+package com.bank.model;
+
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import jakarta.persistence.*;
+import java.util.Set; // For storing roles
+
+/**
+ * Represents a user in the banking application.
+ * This entity will store user authentication and authorization details.
+ */
+@Entity // Marks this class as a JPA entity, mapping it to a database table.
+@Table(name = "app_users") // Specifies the table name in the database. "user" can be a reserved keyword.
+@Data // Lombok annotation: Generates getters, setters, toString, equals, and hashCode methods.
+@NoArgsConstructor // Lombok annotation: Generates a no-argument constructor.
+@AllArgsConstructor // Lombok annotation: Generates a constructor with all fields.
+@Builder // Lombok annotation: Provides a builder pattern for object creation.
+public class User {
+
+    @Id // Marks the field as the primary key of the entity.
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Configures the primary key generation strategy.
+    private Long id;
+
+    @Column(unique = true, nullable = false) // Ensures username is unique and not null.
+    private String username;
+
+    @Column(nullable = false) // Password cannot be null.
+    private String password; // Store encoded password (e.g., using BCrypt)
+
+    @Column(unique = true, nullable = false) // Ensures email is unique and not null.
+    private String email;
+
+    @ElementCollection(fetch = FetchType.EAGER) // Stores a collection of simple types (roles). EAGER fetch ensures roles are loaded with the user.
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id")) // Defines the join table for roles.
+    @Column(name = "role") // Specifies the column name for the role in the join table.
+    private Set<String> roles; // e.g., "ROLE_ADMIN", "ROLE_USER"
+
+    // Note: No explicit getters/setters/constructors are needed due to Lombok annotations.
+}

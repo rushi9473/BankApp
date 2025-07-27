@@ -1,0 +1,40 @@
+package com.bank.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal; // Recommended for financial calculations to avoid floating-point inaccuracies.
+
+/**
+ * Represents a bank account associated with a user.
+ */
+@Entity // Marks this class as a JPA entity.
+@Table(name = "accounts") // Specifies the table name.
+@Data // Lombok annotation: Generates getters, setters, toString, equals, and hashCode methods.
+@NoArgsConstructor // Lombok annotation: Generates a no-argument constructor.
+@AllArgsConstructor // Lombok annotation: Generates a constructor with all fields.
+@Builder // Lombok annotation: Provides a builder pattern for object creation.
+public class Account {
+
+    @Id // Primary key.
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-generated ID.
+    private Long id;
+
+    @Column(unique = true, nullable = false) // Account number must be unique and not null.
+    private String accountNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY) // Many accounts can belong to one user. LAZY fetch to avoid loading user unnecessarily.
+    @JoinColumn(name = "user_id", nullable = false) // Foreign key column in the accounts table linking to the user.
+    private User user; // Reference to the User who owns this account.
+
+    @Column(nullable = false, precision = 19, scale = 2) // BigDecimal for balance, with precision for currency.
+    private BigDecimal balance;
+
+    @Column(nullable = false) // e.g., "SAVINGS", "CHECKING"
+    private String type;
+
+    // Note: No explicit getters/setters/constructors are needed due to Lombok annotations.
+}

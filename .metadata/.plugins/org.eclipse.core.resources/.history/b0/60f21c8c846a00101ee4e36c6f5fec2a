@@ -1,0 +1,72 @@
+package com.bank.service;
+
+import com.bank.dto.TransactionDto;
+import com.bank.model.Account;
+import com.bank.model.Transaction;
+import com.bank.model.User;
+import com.bank.repository.AccountRepository;
+import com.bank.repository.TransactionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Service class for managing Transaction-related operations.
+ * This is an initial simple version. Kafka integration will modify this later.
+ */
+@Service
+@Transactional
+public class TransactionService {
+
+    private final TransactionRepository transactionRepository;
+    private final AccountRepository accountRepo; 
+
+     
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepo) {
+        this.transactionRepository = transactionRepository;
+        this.accountRepo =  accountRepo;;
+    }
+
+    
+
+    public Transaction recordTransaction(TransactionDto trans) {
+    	LocalDateTime localDateTimeStamp = LocalDateTime.now();
+	
+    	 Account account = accountRepo.findById(trans.getAccountId()).orElseThrow(() -> new RuntimeException("User not found"));
+    	 Transaction ts=new Transaction();
+    	 ts.setAccount(account);
+    	 ts.setAmount(trans.getAmount());
+    	 ts.setDescription(trans.getDescription());
+    	 ts.setStatus(trans.getStatus());
+    	   
+    	 ts.setTimestamp(localDateTimeStamp);
+    	 ts.setType(trans.getType());
+
+        return transactionRepository.save(ts);
+    }
+
+    /**
+     * Finds all transactions for a given account, ordered by timestamp descending.
+     *
+     * @param account The account to retrieve transactions for.
+     * @return A list of transactions.
+     */
+    public List<Transaction> findTransactionsByAccount(Account account) {
+        return transactionRepository.findByAccountOrderByTimestampDesc(account);
+    }
+
+    /**
+     * Finds a transaction by its ID.
+     *
+     * @param id The ID of the transaction.
+     * @return An Optional containing the Transaction if found, or empty if not.
+     */
+    public Optional<Transaction> findTransactionById(Long id) {
+        return transactionRepository.findById(id);
+    }
+}

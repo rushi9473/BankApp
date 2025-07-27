@@ -1,0 +1,68 @@
+// src/main/java/com/bank/controller/UserController.java
+package com.bank.controller;
+
+import com.bank.model.User;
+import com.bank.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * REST Controller for User-related operations.
+ * Handles HTTP requests for user registration and retrieval.
+ */
+@RestController // Marks this class as a REST controller, handling incoming HTTP requests.
+@RequestMapping("/api/users") // Base path for all endpoints in this controller.
+public class UserController {
+
+    private final UserService userService;
+
+    @Autowired // Spring automatically injects the UserService.
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    /**
+     * Registers a new user.
+     *
+     * @param user The User object received in the request body.
+     * @return ResponseEntity with the created User and HTTP status 201 (Created).
+     */
+    @PostMapping("/register") // Maps POST requests to /api/users/register.
+    public ResponseEntity<User> registerUser(@RequestBody User user) {
+        
+            User registeredUser = userService.registerUser(user);
+            return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
+        
+            }
+    
+
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param id The ID of the user from the path variable.
+     * @return ResponseEntity with the User and HTTP status 200 (OK), or 404 (Not Found).
+     */
+    @GetMapping("/{id}") // Maps GET requests to /api/users/{id}.
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        Optional<User> user = userService.findUserById(id);
+        // Java 8 Optional.map and .orElseGet for concise handling
+        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * Retrieves all users. (Admin access only in a real app)
+     *
+     * @return ResponseEntity with a list of users and HTTP status 200 (OK).
+     */
+    @GetMapping // Maps GET requests to /api/users.
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.findAllUsers();
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+}

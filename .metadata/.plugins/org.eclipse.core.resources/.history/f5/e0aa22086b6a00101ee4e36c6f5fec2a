@@ -1,0 +1,74 @@
+package com.bank.model;
+
+
+
+
+import jakarta.persistence.*;
+import java.math.BigDecimal; // Recommended for financial calculations to avoid floating-point inaccuracies.
+
+/**
+ * Represents a bank account associated with a user.
+ */
+@Entity
+public class Account {
+
+    @Id // Primary key.
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-generated ID.
+    private Long id;
+
+     // Account number must be unique and not null.
+    private String accountNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user; 
+
+     // BigDecimal for balance, with precision for currency.
+    private BigDecimal balance;
+
+    // e.g., "SAVINGS", "CHECKING"
+    private String type;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getAccountNumber() {
+		return accountNumber;
+	}
+
+	public void setAccountNumber(String accountNumber) {
+		this.accountNumber = accountNumber;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public BigDecimal getBalance() {
+		return balance;
+	}
+
+	public void setBalance(BigDecimal balance) {
+		this.balance = balance;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+    
+
+    // Note: No explicit getters/setters/constructors are needed due to Lombok annotations.
+}

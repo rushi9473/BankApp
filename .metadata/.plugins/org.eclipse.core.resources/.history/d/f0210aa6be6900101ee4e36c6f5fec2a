@@ -1,0 +1,104 @@
+package com.bank.service;
+
+import com.bank.model.Account;
+import com.bank.model.Transaction;
+import com.bank.repository.TransactionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Service class for managing Transaction-related operations.
+ * This is an initial simple version. Kafka integration will modify this later.
+ */
+@Service // Marks this class as a Spring Service component.
+public class TransactionService {
+
+    private final TransactionRepository transactionRepository;
+    private final AccountService accountService; // To interact with account balances
+
+    @Autowired // Spring automatically injects dependencies.
+    public TransactionService(TransactionRepository transactionRepository, AccountService accountService) {
+        this.transactionRepository = transactionRepository;
+        this.accountService = accountService;
+    }
+
+    /**
+     * Records a new transaction for an account.
+     * This is the initial synchronous version. Will be replaced by Kafka producer/consumer.
+     *
+     * @param account The account for which the transaction is being recorded.
+     * @param type The type of transaction (e.g., "DEPOSIT", "WITHDRAWAL").
+     * @param amount The amount of the transaction.
+     * @param description A description for the transaction.
+     * @return The recorded Transaction object.
+     * @throws RuntimeException if insufficient funds for withdrawal.
+     */
+    @Transactional // Ensures atomicity of the transaction and account balance update.
+    public Transaction recordTransaction(Account account, String type, BigDecimal amount, String description) {
+        // Validate amount
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Transaction amount must be positive.");
+        }
+
+        BigDecimal currentBalance = account.getBalance();
+        BigDecimal newBalance;
+        String status;
+
+        if ("DEPOSIT".equalsIgnoreCase(type)) {
+            newBalance = currentBalance.add(amount);
+            status = "COMPLETED";
+        } else if ("WITHDRAWAL".equalsIgnoreCase(type)) {
+            if (currentBalance.compareTo(amount) < 0) {
+                status = "FAILED"; // Mark as failed due to insufficient funds
+                throw new RuntimeException("Insufficient funds for withdrawal from account: " + account.getAccountNumber());
+            }
+            newBalance = currentBalance.subtract(amount);
+            status = "COMPLETED";
+        } else {
+            status = "FAILED";
+            throw new IllegalArgumentException("Invalid transaction type: " + type);
+        }
+
+        // Update account balance
+        account.setBalance(newBalance);
+        accountService.updateAccountBalance(account); // This will also update the cache
+
+        // Create and save the transaction record
+        Transaction transaction = Transaction.builder()
+                .account(account)
+                .type(type)
+                .amount(amount)
+                .timestamp(LocalDateTime.now()) // Java 8: Current timestamp
+                .description(description)
+                .status(status)
+                .build();
+
+        return transactionRepository.save(transaction);
+    }
+
+    /**
+     * Finds all transactions for a given account, ordered by timestamp descending.
+     *
+     * @param account The account to retrieve transactions for.
+     * @return A list of transactions.
+     */
+    public List<Transaction> findTransactionsByAccount(Account account) {
+        return transactionRepository.findByAccountOrderByTimestampDesc(account);
+    }
+
+    /**
+     * Finds a transaction by its ID.
+     *
+     * @param id The ID of the transaction.
+     * @return An Optional containing the Transaction if found, or empty if not.
+     */
+    public Optional<Transaction> findTransactionById(Long id) {
+        return transactionRepository.findById(id);
+    }
+}

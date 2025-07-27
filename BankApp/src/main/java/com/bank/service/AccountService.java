@@ -1,0 +1,69 @@
+package com.bank.service;
+
+import com.bank.dto.createAccountDto;
+import com.bank.model.Account;
+import com.bank.model.User;
+import com.bank.repository.AccountRepository;
+import com.bank.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
+import org.springframework.stereotype.Service;
+import java.util.Optional;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import java.util.UUID; // For generating unique account numbers
+
+@Service
+@Transactional
+public class AccountService {
+
+    private final AccountRepository accountRepository;
+    private final UserRepository userrepo;
+
+    public AccountService(AccountRepository accountRepository, UserRepository userrepo) {
+        this.accountRepository = accountRepository;
+        this.userrepo = userrepo;
+    }
+
+    public Account createAccount(createAccountDto dto) {
+        String accountNumber = UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        String accountType = dto.getAccountType();
+
+        User byId = userrepo.findById(dto.getUserid())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Account account = new Account();
+        account.setAccountNumber(accountNumber);
+        account.setUser(byId);
+        account.setBalance(BigDecimal.valueOf(20));  // or from dto
+        account.setType(accountType);
+        Account saved = accountRepository.save(account);
+        System.out.println("Saved account ID: " + saved.getId());
+        return saved;
+
+        
+    }
+
+    public Account findByAccountNumber(String accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber);
+    }
+
+    public List<Account> findAccountsByUser(User user) {
+        return accountRepository.findByUser(user);
+    }
+
+    public BigDecimal getAccountBalance(String accountNumber) {
+        return findByAccountNumber(accountNumber).getBalance();
+    }
+
+    public Account updateAccountBalance(Account account) {
+        return accountRepository.save(account);
+    }
+
+    public Account findByIdAndUser(Long accountId, User user) {
+        return accountRepository.findByIdAndUser(accountId, user);
+    }
+}

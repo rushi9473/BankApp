@@ -1,0 +1,78 @@
+package com.bank.controller;
+
+import com.bank.model.Account;
+import com.bank.model.Transaction;
+import com.bank.model.User;
+import com.bank.service.AccountService;
+import com.bank.service.TransactionService;
+import com.bank.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * REST Controller for Transaction-related operations.
+ * Handles HTTP requests for recording transactions and viewing transaction history.
+ */
+@RestController // Marks this class as a REST controller.
+@RequestMapping("/api/transactions") // Base path for all endpoints in this controller.
+public class TransactionController {
+
+    private final TransactionService transactionService;
+    private final AccountService accountService;
+    private final UserService userService;
+
+    @Autowired // Spring automatically injects dependencies.
+    public TransactionController(TransactionService transactionService, AccountService accountService, UserService userService) {
+        this.transactionService = transactionService;
+        this.accountService = accountService;
+        this.userService = userService;
+    }
+
+    /**
+     * Helper method to get the currently authenticated user.
+     *
+     * @return The authenticated User object, or null if not found.
+     */
+    
+
+    /**
+     * Records a new deposit or withdrawal transaction.
+     * This is the initial synchronous version. Will be modified for Kafka later.
+     *
+     * @param accountId The ID of the account involved in the transaction.
+     * @param transactionDetails A map containing "type" (DEPOSIT/WITHDRAWAL), "amount", and "description".
+     * @return ResponseEntity with the created Transaction and HTTP status 201 (Created), or error.
+     */
+    @PostMapping("/{accountId}") // Maps POST requests to /api/transactions/{accountId}.
+    public ResponseEntity<String> recordTransaction(
+            @PathVariable Long accountId,
+            @RequestBody Map<String, String> transactionDetails) {
+
+        
+            return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
+        }
+    
+
+    /**
+     * Retrieves transaction history for a specific account.
+     *
+     * @param accountId The ID of the account.
+     * @return ResponseEntity with a list of transactions and HTTP status 200 (OK), or 404 (Not Found).
+     */
+    @GetMapping("/account/{accountId}") // Maps GET requests to /api/transactions/account/{accountId}.
+    public ResponseEntity<String> getAccountTransactions(@PathVariable Long accountId) {
+        
+        
+        return new ResponseEntity<>("transactions", HttpStatus.OK);
+    }
+}
+

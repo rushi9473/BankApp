@@ -1,0 +1,72 @@
+package com.bank.service;
+
+import com.bank.model.Account;
+import com.bank.model.User;
+import com.bank.repository.AccountRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID; // For generating unique account numbers
+
+/**
+ * Service class for managing Account-related operations.
+ * Handles business logic for creating accounts, checking balances, and retrieving accounts.
+ */
+@Service // Marks this class as a Spring Service component.
+public class AccountService {
+
+    private final AccountRepository accountRepository;
+
+    @Autowired // Spring automatically injects dependencies.
+    public AccountService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+
+    
+    @Transactional // Ensures the entire method runs within a single database transaction.
+    public Account createAccount(User user, String accountType) {
+        // Generate a unique account number
+        String accountNumber = UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+
+        Account account=new Account();
+        account.setAccountNumber(accountNumber);
+        account.setUser(user);
+        account.setType(accountType);
+
+        
+        return accountRepository.save(account);
+    }
+
+    
+     
+    public Account findByAccountNumber(String accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber);
+    }
+
+    
+    public List<Account> findAccountsByUser(User user) {
+        return accountRepository.findByUser(user);
+    }
+
+     
+    public BigDecimal getAccountBalance(String accountNumber) {
+        return findByAccountNumber(accountNumber).getBalance(); // Java 8 Optional.map to extract balance
+    }
+
+ 
+    public Account updateAccountBalance(Account account) {
+        return accountRepository.save(account);
+    }
+
+   
+    public Account findByIdAndUser(Long accountId, User user) {
+        return accountRepository.findByIdAndUser(accountId, user);
+    }
+}

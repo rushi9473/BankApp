@@ -1,0 +1,72 @@
+package com.bank.service;
+
+
+import com.bank.model.User;
+import com.bank.repository.UserRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+/**
+ * Service class for managing User-related operations.
+ * Handles business logic for user registration and retrieval.
+ */
+@Service // Marks this class as a Spring Service component.
+public class UserService {
+
+    private final UserRepository userRepository;
+   // Injected for password hashing
+
+    @Autowired // Spring automatically injects dependencies.
+    public UserService(UserRepository userRepository ) {
+        this.userRepository = userRepository;
+        
+    }
+
+    public User registerUser(User user) {
+        // Check if username already exists using Java 8 Optional and Stream API principles
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new RuntimeException("Username already taken: " + user.getUsername());
+        }
+        // Check if email already exists
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new RuntimeException("Email already registered: " + user.getEmail());
+        }
+
+       
+
+       
+
+        return userRepository.save(user);
+    }
+
+    
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    /**
+     * Finds a user by their username.
+     * This method will be used by Spring Security's UserDetailsService.
+     *
+     * @param username The username of the user to find.
+     * @return An Optional containing the User if found, or empty if not.
+     */
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    /**
+     * Retrieves all users.
+     * @return A list of all User objects.
+     */
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
+    }
+}

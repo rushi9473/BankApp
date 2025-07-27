@@ -1,0 +1,34 @@
+package com.bank.repository;
+
+import com.bank.model.Account;
+import com.bank.model.Transaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * JPA Repository for the Transaction entity.
+ * Provides standard CRUD operations and allows for custom query methods.
+ */
+@Repository // Marks this interface as a Spring Data JPA repository.
+public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
+    /**
+     * Finds all Transactions for a specific Account, ordered by timestamp descending.
+     *
+     * @param account The Account object for which to retrieve transactions.
+     * @return A List of Transactions associated with the specified Account,
+     * ordered from most recent to oldest.
+     */
+    List<Transaction> findByAccountOrderByTimestampDesc(Account account);
+
+    /**
+     * Finds the latest Transaction for a specific Account.
+     *
+     * @param account The Account object for which to retrieve the latest transaction.
+     * @return An Optional containing the latest Transaction if found, or empty if not.
+     */
+    Optional<Transaction> findTopByAccountOrderByTimestampDesc(Account account);
+}

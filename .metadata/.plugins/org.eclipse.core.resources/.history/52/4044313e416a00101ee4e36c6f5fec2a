@@ -1,0 +1,47 @@
+package com.bank.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal; // For transaction amount.
+import java.time.LocalDateTime; // For modern date and time handling (Java 8 feature).
+
+/**
+ * Represents a financial transaction (deposit, withdrawal, transfer) on an account.
+ */
+@Entity // Marks this class as a JPA entity.
+@Table(name = "transactions") // Specifies the table name.
+@Data // Lombok annotation: Generates getters, setters, toString, equals, and hashCode methods.
+@NoArgsConstructor // Lombok annotation: Generates a no-argument constructor.
+@AllArgsConstructor // Lombok annotation: Generates a constructor with all fields.
+@Builder // Lombok annotation: Provides a builder pattern for object creation.
+public class Transaction {
+
+    @Id // Primary key.
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-generated ID.
+    private Long id;
+
+     // Many transactions can belong to one account. LAZY fetch.
+     // Foreign key column linking to the account.
+    private Account account; // Reference to the Account involved in this transaction.
+
+     // e.g., "DEPOSIT", "WITHDRAWAL", "TRANSFER"
+    private String type;
+
+     // BigDecimal for amount.
+    private BigDecimal amount;
+
+    
+    private LocalDateTime timestamp; // Java 8 Date/Time API for transaction timestamp.
+
+    private String description; // Optional description for the transaction.
+
+     // e.g., "COMPLETED", "PENDING", "FAILED"
+    private String status;
+
+    // Note: No explicit getters/setters/constructors are needed due to Lombok annotations.
+}
+
